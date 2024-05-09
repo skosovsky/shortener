@@ -1,0 +1,12 @@
+POST http://localhost:8080/
+Content-Type: text/plain
+
+https://practicum.yandex.ru/
+
+> {%
+    client.global.set("link", response.body);
+%}
+
+###
+
+GET {{link}}
