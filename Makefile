@@ -17,7 +17,7 @@ build: ## Build an application
 .PHONY: build-test
 build-test: ## Build an application
 	@echo "Building ${APP} ..."
-	go build -o cmd/shortener/shortener shortener/cmd/shortener
+	go build -buildvcs=false -o cmd/shortener/shortener shortener/cmd/shortener
 
 test1: ## Test increment #1
 	@echo "Testing ${APP} - increment 1..."

@@ -19,12 +19,7 @@ import (
 func main() {
 	loggerInit()
 	loadEnv()
-
-	appInfo, err := config.NewAppInfo()
-	if err != nil {
-		log.Fatal("appInfo", log.ErrAttr(err))
-	}
-	log.Info("appInfo", log.AnyAttr("app", fmt.Sprint(appInfo)))
+	logAppInfo()
 
 	cfg, err := config.NewConfig()
 	if err != nil {
@@ -72,4 +67,16 @@ func loadEnv() {
 		}
 		log.Error("Error loading .env file", log.ErrAttr(err), log.StringAttr("work dir", workDir))
 	}
+}
+
+func logAppInfo() {
+	if os.Getenv("APP_MODE") == "test" || os.Getenv("APP_MODE") == "production" {
+		return
+	}
+
+	appInfo, err := config.NewAppInfo()
+	if err != nil {
+		log.Fatal("appInfo", log.ErrAttr(err))
+	}
+	log.Info("appInfo", log.AnyAttr("app", fmt.Sprint(appInfo)))
 }
