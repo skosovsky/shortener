@@ -62,10 +62,10 @@ func (h *HandlerMiddleware) Handle(ctx context.Context, rec Record) error { // T
 	return fmt.Errorf("next handle: %w", h.next.Handle(ctx, rec))
 }
 
-func (h *HandlerMiddleware) WithAttrs(attrs []Attr) Handler { //nolint:ireturn // implementation Handler interface
+func (h *HandlerMiddleware) WithAttrs(attrs []Attr) Handler { //nolint:ireturn,nolintlint // implementation Handler interface
 	return &HandlerMiddleware{next: h.next.WithAttrs(attrs)}
 }
 
-func (h *HandlerMiddleware) WithGroup(name string) Handler { //nolint:ireturn // implementation Handler interface
+func (h *HandlerMiddleware) WithGroup(name string) Handler { //nolint:ireturn,nolintlint // implementation Handler interface
 	return &HandlerMiddleware{next: h.next.WithGroup(name)}
 }

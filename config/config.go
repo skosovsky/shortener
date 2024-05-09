@@ -12,8 +12,8 @@ type Config struct {
 		Mode string `env:"APP_MODE" validate:"required,oneof=development production test"`
 	}
 	Server struct {
-		Host string `env:"APP_HOST" validate:"required"`
-		Port int    `env:"APP_PORT" validate:"required,min=0,max=65535"`
+		Host string `env:"SRV_HOST" validate:"required"`
+		Port int    `env:"SRV_PORT" validate:"required,min=0,max=65535"`
 	}
 	Store struct {
 		DBDriver  string `env:"DB_DRIVER"  validate:"required,oneof=sqlite3 memory"`

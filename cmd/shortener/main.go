@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/joho/godotenv"
 
@@ -56,7 +57,7 @@ func loggerInit() {
 }
 
 func loadEnv() {
-	if os.Getenv("APP_MODE") == "test" || os.Getenv("APP_MODE") == "production" {
+	if os.Getenv("APP_MODE") == "test" || os.Getenv("APP_MODE") == "production" { //nolint:goconst // not applicable
 		return
 	}
 
@@ -66,7 +67,25 @@ func loadEnv() {
 			log.Error("Error getting work dir", log.ErrAttr(errGetWD))
 		}
 		log.Error("Error loading .env file", log.ErrAttr(err), log.StringAttr("work dir", workDir))
+		setEnvDefault()
 	}
+}
+
+func setEnvDefault() {
+	cfg := config.Config{} //nolint:exhaustruct // long struct
+	cfg.App.Mode = "test"
+	cfg.Server.Host = "localhost"
+	cfg.Server.Port = 8080
+	cfg.Store.DBDriver = "memory"
+	cfg.Store.DBAddress = "map"
+
+	_ = os.Setenv("APP_MODE", cfg.App.Mode)
+	_ = os.Setenv("SRV_HOST", cfg.Server.Host)
+	_ = os.Setenv("SRV_PORT", strconv.Itoa(cfg.Server.Port))
+	_ = os.Setenv("DB_DRIVER", cfg.Store.DBDriver)
+	_ = os.Setenv("DB_ADDRESS", cfg.Store.DBAddress)
+
+	log.Info("Environment variables set default")
 }
 
 func logAppInfo() {
