@@ -1,0 +1,13 @@
+sequenceDiagram
+    autonumber
+    actor user
+    participant shortener
+    user ->> shortener: POST / link
+    activate shortener
+    shortener ->> shortener: generate short link
+    create participant store
+    shortener ->> store: INSERT
+    destroy store
+    store -->> shortener: OK
+    shortener -->> user: short link
+    deactivate shortener
