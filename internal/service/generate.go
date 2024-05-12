@@ -9,12 +9,12 @@ import (
 
 const (
 	LettersNums = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	LenID       = 8
 )
 
 func SiteGenerate(link string) model.Site {
-	var lenID = 8
 	var idxDomain = 0
-	var id = make([]byte, lenID)
+	var id = make([]byte, LenID)
 	var site model.Site
 
 	_, _ = rand.Read(id)

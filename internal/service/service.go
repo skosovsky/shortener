@@ -16,10 +16,10 @@ var (
 )
 
 type Shortener struct {
-	store store.Database
+	store store.Store
 }
 
-func NewSiteService(store store.Database) Shortener {
+func NewSiteService(store store.Store) Shortener {
 	return Shortener{store: store}
 }
 

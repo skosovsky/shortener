@@ -33,7 +33,7 @@ func main() {
 		log.Fatal("domains", log.ErrAttr(err))
 	}
 
-	db, err := store.NewMemoryStore() // add defer db.CloseDBStore() - only for sqlite3
+	db, err := store.NewFakeStore() // add defer db.CloseDBStore() - only for sqlite3
 	if err != nil {
 		log.Fatal("store", log.ErrAttr(err))
 	}
