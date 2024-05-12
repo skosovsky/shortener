@@ -21,6 +21,10 @@ build-test: ## Build an application
 	go build -buildvcs=false -o cmd/shortener/shortener shortener/cmd/shortener
 	go generate ./...
 
+test-static: ## Test increment #1
+	@echo "Testing ${APP} - static..."
+	go vet -vettool=$(which tests/statictest-darwin-arm64) ./...
+
 test1: ## Test increment #1
 	@echo "Testing ${APP} - increment 1..."
 	tests/shortenertestbeta-darwin-arm64 -test.v -test.run=^TestIteration1$ -binary-path=cmd/shortener/shortener

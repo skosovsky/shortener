@@ -68,6 +68,7 @@ func TestMethods(t *testing.T) {
 	}
 
 	for _, tt := range testCases {
+		tt := tt //nolint:copyloopvar // it's for stupid Yandex Practicum static test
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
