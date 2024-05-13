@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/go-chi/chi/v5"
+
 	"shortener/config"
 	log "shortener/pkg/logger"
 )
@@ -20,9 +22,9 @@ const (
 )
 
 func Handler() http.Handler {
-	router := http.NewServeMux()
-	router.HandleFunc(http.MethodPost+" /", AddSite)
-	router.HandleFunc(http.MethodGet+" /{id}", GetSite)
+	router := chi.NewRouter()
+	router.Post("/", AddSite)
+	router.Get("/{id}", GetSite)
 
 	return router
 }
@@ -60,4 +62,12 @@ func RunServer(ctx context.Context, cfg config.Config) error {
 	}(&server)
 
 	return nil
+}
+
+func HandlerMux() http.Handler {
+	router := http.NewServeMux()
+	router.HandleFunc(http.MethodPost+" /", AddSite)
+	router.HandleFunc(http.MethodGet+" /{id}", GetSite)
+
+	return router
 }

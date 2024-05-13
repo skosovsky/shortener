@@ -14,6 +14,7 @@ import (
 
 func TestMethods(t *testing.T) {
 	t.Parallel()
+
 	type want struct {
 		code        int
 		response    string
@@ -72,7 +73,7 @@ func TestMethods(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			request := httptest.NewRequest(tt.method, tt.request, nil)
+			request := httptest.NewRequest(tt.method, tt.request, http.NoBody)
 			responseRecorder := httptest.NewRecorder()
 
 			switch tt.method {

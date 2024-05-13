@@ -23,7 +23,7 @@ func TestRoutingGet(t *testing.T) {
 		path   string
 		status int
 		body   string
-		answer string
+		// answer string // TODO: add later
 	}
 
 	testCases := []struct {
@@ -31,12 +31,12 @@ func TestRoutingGet(t *testing.T) {
 		want want
 	}{
 		{
-			name: "without id",
+			name: "with id",
 			want: want{
 				path:   "/10",
 				status: 307,
 				body:   "",
-				answer: "https://ya.ru",
+				// answer: "https://ya.ru", // TODO: add later
 			},
 		},
 	}
@@ -68,7 +68,7 @@ func TestRoutingGet(t *testing.T) {
 			t.Parallel()
 
 			url := server.URL + tt.want.path
-			request, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+			request, err := http.NewRequest(http.MethodGet, url, http.NoBody)
 			require.NoError(t, err)
 
 			response, err := http.DefaultClient.Do(request)

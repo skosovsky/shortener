@@ -4,6 +4,8 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
+
 	"shortener/internal/service"
 )
 
@@ -64,7 +66,7 @@ func GetSite(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id := r.PathValue("id")
+	id := chi.URLParam(r, "id") // for mux: id := r.PathValue("id")
 	site, err := shortener.Get(id)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)

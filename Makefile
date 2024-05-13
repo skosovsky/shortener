@@ -1,4 +1,4 @@
-.SILENT:
+#.SILENT:
 APP=shortener
 
 .PHONY: help
@@ -18,20 +18,24 @@ build: ## Build an application
 .PHONY: build-test
 build-test: ## Build an application
 	@echo "Building ${APP} ..."
-	go build -buildvcs=false -o cmd/shortener/shortener shortener/cmd/shortener
+	cd cmd/shortener && go build -buildvcs=false -o shortener
 	go generate ./...
 
-test-static: ## Test increment #1
+test-static: ## Test static
 	@echo "Testing ${APP} - static..."
-	go vet -vettool=$(which tests/statictest-darwin-arm64) ./...
+	go vet -vettool="$(shell which ./tests/statictest-darwin-arm64)" ./...
 
 test1: ## Test increment #1
 	@echo "Testing ${APP} - increment 1..."
-	tests/shortenertestbeta-darwin-arm64 -test.v -test.run=^TestIteration1$ -binary-path=cmd/shortener/shortener
+	tests/shortenertestbeta-darwin-arm64 -test.v -test.run="^TestIteration1$$" -binary-path=cmd/shortener/shortener
 
 test2: ## Test increment #2
 	@echo "Testing ${APP} - increment 2..."
-	tests/shortenertestbeta-darwin-arm64 -test.v -test.run=^TestIteration2$ -source-path=.
+	tests/shortenertestbeta-darwin-arm64 -test.v -test.run="^TestIteration2$$" -source-path=.
+
+test3: ## Test increment #3
+	@echo "Testing ${APP} - increment 3..."
+	tests/shortenertestbeta-darwin-arm64 -test.v -test.run="^TestIteration3$$" -source-path=.
 
 run: ## Run an application
 	@echo "Starting ${APP} ..."
