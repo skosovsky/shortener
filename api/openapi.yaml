@@ -1,0 +1,115 @@
+openapi: 3.1.0
+info:
+  title: Shortener
+  description: Shortener - service make short link for long link
+  version: 0.0.1
+  contact:
+    name: Support API
+    email: skosovsky@smartcreating.ru
+servers:
+  - url: http://localhost:8080
+    description: Local server 1
+  - url: http://127.0.0.1:8080
+    description: Local server 2
+paths:
+  /:
+    post:
+      summary: Create a new short link
+      description: Создает короткую ссылку из полной ссылки
+      operationId: createLink
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: sting
+              example: https://practicum.yandex.ru/
+      responses:
+        201:
+          description: Link created
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: http://localhost:8080/EwHXdJfB
+        400:
+          description: Invalid request
+  /{id}:
+    get:
+      summary: Return full original link
+      description: Возвращает полную длинную ссылку
+      operationId: getLink
+      parameters:
+        - name: id
+          in: path
+          description: The link's id value
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        307:
+          description: Temporary Redirect
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: https://practicum.yandex.ru/
+        400:
+          description: Invalid request
+    delete:
+      summary: Deletes a link
+      description: Удаляет полную и короткую ссылки.
+      operationId: deleteLink
+      parameters:
+        - name: id
+          in: path
+          description: The link's id value
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        200:
+          description: Link delete
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: Link delete
+        202:
+          description: Link found and send query for delete
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: Send query for delete
+        204:
+          description: Link delete
+components:
+  parameters:
+    id:
+      name: id
+      in: path
+      description: ID of the site
+      required: true
+      schema:
+        type: integer
+        format: int32
+  schemas:
+    Id:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+  examples:
+    foo:
+      summary: A foo example
+      value: 1
+    bar:
+      summary: A bar example
+      value: 2
+externalDocs:
+  description: Template repo
+  url: https://github.com/Yandex-Practicum/go-musthave-shortener-tpl
