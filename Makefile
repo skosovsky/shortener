@@ -37,6 +37,10 @@ test3: ## Test increment #3
 	@echo "Testing ${APP} - increment 3..."
 	tests/shortenertestbeta-darwin-arm64 -test.v -test.run="^TestIteration3$$" -source-path=.
 
+test4: ## Test increment #4
+	@echo "Testing ${APP} - increment 4..."
+	tests/shortenertestbeta-darwin-arm64 -test.v -test.run="^TestIteration4$$" -binary-path=cmd/shortener/shortener -server-port=8001
+
 run: ## Run an application
 	@echo "Starting ${APP} ..."
 	go run main.go

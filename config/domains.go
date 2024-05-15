@@ -8,11 +8,7 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-type Domain struct {
-	URL string `json:"domain" validate:"required,url"`
-}
-
-func GetDomains() ([]string, error) { // TODO: Перенести в контекст, чтобы вызывалось 1 раз
+func GetDomains() ([]string, error) { // TODO: Перенести в контекст, чтобы вызывалось 1 раз или в конфиг или удалить
 	pathConfig := "config.json"
 	fileConfig, err := os.ReadFile(pathConfig)
 	if err != nil {

@@ -3,7 +3,6 @@ package service
 import (
 	"crypto/rand"
 
-	"shortener/config"
 	"shortener/internal/model"
 )
 
@@ -12,8 +11,7 @@ const (
 	LenID       = 8
 )
 
-func SiteGenerate(link string) model.Site {
-	var idxDomain = 0
+func (s Shortener) SiteGenerate(link string) model.Site {
 	var id = make([]byte, LenID)
 	var site model.Site
 
@@ -23,12 +21,9 @@ func SiteGenerate(link string) model.Site {
 		id[k] = LettersNums[v%byte(len(LettersNums))]
 	}
 
-	domains, _ := config.GetDomains()
-	domain := domains[idxDomain]
-
 	site.ID = string(id)
 	site.Link = link
-	site.ShortLink = domain + "/" + string(id)
+	site.ShortLink = s.config.Domain.URL + "/" + string(id)
 
 	return site
 }

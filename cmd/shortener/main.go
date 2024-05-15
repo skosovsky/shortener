@@ -28,17 +28,12 @@ func main() {
 	}
 	log.Info("config", log.AnyAttr("cfg", fmt.Sprint(cfg)))
 
-	_, err = config.GetDomains() // for validate
-	if err != nil {
-		log.Fatal("domains", log.ErrAttr(err))
-	}
-
-	db, err := store.NewFakeStore() // add defer db.CloseDBStore() - only for sqlite3
+	db, err := store.NewMemoryStore() // add defer db.CloseDBStore() - only for sqlite3
 	if err != nil {
 		log.Fatal("store", log.ErrAttr(err))
 	}
 
-	shortener := service.NewSiteService(db)
+	shortener := service.NewSiteService(db, cfg)
 
 	ctx := context.WithValue(context.Background(), app.KeyServiceCtx{}, shortener)
 

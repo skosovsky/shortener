@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 
+	"shortener/config"
 	"shortener/internal/model"
 	"shortener/internal/store"
 	log "shortener/pkg/logger"
@@ -16,11 +17,15 @@ var (
 )
 
 type Shortener struct {
-	store store.Store
+	store  store.Store
+	config config.Config
 }
 
-func NewSiteService(store store.Store) Shortener {
-	return Shortener{store: store}
+func NewSiteService(store store.Store, config config.Config) Shortener {
+	return Shortener{
+		store:  store,
+		config: config,
+	}
 }
 
 func (s Shortener) Add(link string) (model.Site, error) {
@@ -29,7 +34,7 @@ func (s Shortener) Add(link string) (model.Site, error) {
 		return model.Site{}, fmt.Errorf("invalid link URL: %w", err)
 	}
 
-	site := SiteGenerate(link)
+	site := s.SiteGenerate(link)
 
 	if ok := s.store.Add(site); !ok {
 		return model.Site{}, ErrSiteNotAdded

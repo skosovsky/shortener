@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"shortener/config"
 	"shortener/internal/app"
 	"shortener/internal/service"
 	"shortener/internal/store"
@@ -45,8 +46,9 @@ func TestRoutingGet(t *testing.T) {
 	// ctrl := gomock.NewController(t)
 	// defer ctrl.Finish()
 
+	cfg, _ := config.NewConfig()
 	db, _ := store.NewDummyStore()
-	shortener := service.NewSiteService(db)
+	shortener := service.NewSiteService(db, cfg)
 	ctx := context.WithValue(context.Background(), app.KeyServiceCtx{}, shortener)
 
 	server := httptest.NewUnstartedServer(app.Handler())

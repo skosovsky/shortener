@@ -50,6 +50,7 @@ func RunServer(ctx context.Context, cfg config.Config) error {
 		},
 	}
 
+	log.Info("server starting", log.StringAttr("host:port", hostPort)) //nolint:contextcheck // false positive
 	if err := server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
 		return fmt.Errorf("could not start server: %w", err)
 	}
