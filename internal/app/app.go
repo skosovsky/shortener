@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -30,9 +29,9 @@ func Handler() http.Handler {
 }
 
 func RunServer(ctx context.Context, cfg config.Config) error {
-	hostPort := cfg.Server.Host + ":" + strconv.Itoa(cfg.Server.Port)
+	// hostPort := cfg.Server.Host + ":" + strconv.Itoa(cfg.Server.Port)
 	server := http.Server{
-		Addr:                         hostPort,
+		Addr:                         cfg.Address,
 		Handler:                      Handler(),
 		DisableGeneralOptionsHandler: false,
 		TLSConfig:                    nil,
@@ -50,7 +49,7 @@ func RunServer(ctx context.Context, cfg config.Config) error {
 		},
 	}
 
-	log.Info("server starting", log.StringAttr("host:port", hostPort)) //nolint:contextcheck // false positive
+	log.Info("server starting", log.StringAttr("host:port", cfg.Address)) //nolint:contextcheck // false positive
 	if err := server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
 		return fmt.Errorf("could not start server: %w", err)
 	}

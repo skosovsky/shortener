@@ -12,12 +12,15 @@ help: Makefile ## Show this help
 build: ## Build an application
 	@echo "Building ${APP} ..."
 	mkdir -p build
-	go build -o build/${APP} shortener/cmd/shortener
+	go mod tidy
 	go generate ./...
+	go build -o build/${APP} shortener/cmd/shortener
 
 .PHONY: build-test
 build-test: ## Build an application
 	@echo "Building ${APP} ..."
+	go mod tidy
+	go generate ./...
 	cd cmd/shortener && go build -buildvcs=false -o shortener
 	go generate ./...
 
@@ -40,6 +43,10 @@ test3: ## Test increment #3
 test4: ## Test increment #4
 	@echo "Testing ${APP} - increment 4..."
 	tests/shortenertestbeta-darwin-arm64 -test.v -test.run="^TestIteration4$$" -binary-path=cmd/shortener/shortener -server-port=8001
+
+test5: ## Test increment #5
+	@echo "Testing ${APP} - increment 5..."
+	tests/shortenertestbeta-darwin-arm64 -test.v -test.run="^TestIteration5$$" -binary-path=cmd/shortener/shortener -server-port=8002
 
 run: ## Run an application
 	@echo "Starting ${APP} ..."

@@ -14,12 +14,13 @@ type (
 	}
 
 	Domain struct {
-		URL string `json:"domain" validate:"required,url"`
+		URL string `env:"BASE_URL" validate:"url"`
 	}
 
 	Server struct {
-		Host string `env:"SRV_HOST" validate:"required"`
-		Port int    `env:"SRV_PORT" validate:"required,min=0,max=65535"`
+		Address string `env:"SERVER_ADDRESS" validate:"url"`
+		// Host    string `env:"SRV_HOST"       validate:"required"`
+		// Port    int    `env:"SRV_PORT"       validate:"required,min=0,max=65535"`
 	}
 
 	Store struct {
@@ -38,10 +39,6 @@ type (
 func NewConfig() (Config, error) {
 	var config Config
 
-	if err := env.Parse(&config); err != nil {
-		return Config{}, fmt.Errorf("failed to parse config: %w", err)
-	}
-
 	var configServer Server
 	var domain Domain
 	err := configServer.Set("localhost:8080")
@@ -56,6 +53,10 @@ func NewConfig() (Config, error) {
 
 	config.Server = configServer
 	config.Domain = domain
+
+	if err = env.Parse(&config); err != nil {
+		return Config{}, fmt.Errorf("failed to parse config: %w", err)
+	}
 
 	if err = config.validate(); err != nil {
 		return Config{}, fmt.Errorf("failed to validate config: %w", err)

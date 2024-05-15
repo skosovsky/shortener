@@ -3,7 +3,6 @@ package config
 import (
 	"errors"
 	"fmt"
-	"strconv"
 	"strings"
 )
 
@@ -18,7 +17,7 @@ type Value interface {
 }
 
 func (s *Server) String() string {
-	return s.Host + ":" + strconv.Itoa(s.Port)
+	return s.Address
 }
 
 func (s *Server) Set(flagValue string) error {
@@ -30,13 +29,16 @@ func (s *Server) Set(flagValue string) error {
 		return fmt.Errorf("parsing address error - %s: %w", flagValue, ErrInvalidServerAddress)
 	}
 
-	port, err := strconv.Atoi(flagValues[1])
-	if err != nil {
-		return fmt.Errorf("parsing port error - %s: %w", flagValue, ErrInvalidServerPort)
-	}
+	// for separate store host and port
+	// port, err := strconv.Atoi(flagValues[1])
+	// if err != nil {
+	//	return fmt.Errorf("parsing port error - %s: %w", flagValue, ErrInvalidServerPort)
+	// }
+	//
+	// s.Port = port
+	// s.Host = flagValues[0]
 
-	s.Port = port
-	s.Host = flagValues[0]
+	s.Address = flagValues[0] + ":" + flagValues[1]
 
 	return nil
 }

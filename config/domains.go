@@ -16,7 +16,7 @@ func GetDomains() ([]string, error) { // TODO: Перенести в конте�
 	}
 
 	var domains []Domain
-	err = json.Unmarshal(fileConfig, &domains)
+	err = json.Unmarshal(fileConfig, &domains) //nolint:musttag // unknown
 	if err != nil {
 		return nil, fmt.Errorf("error unmarshalling domains: %w", err)
 	}
