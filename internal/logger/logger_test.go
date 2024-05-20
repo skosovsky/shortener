@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"testing"
 
-	log "shortener/pkg/logger"
+	log "shortener/internal/logger"
 )
 
 func TestNewLogger(t *testing.T) {

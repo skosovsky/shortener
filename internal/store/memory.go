@@ -1,67 +1,40 @@
-package store //nolint:dupl // false positive
+package store
 
 import (
+	"errors"
 	"sync"
 
 	"shortener/internal/model"
 )
 
+var ErrSiteNotFound = errors.New("site not found")
+
 type MemoryStore struct {
 	memory map[string]model.Site
-	mu     sync.RWMutex
+	mu     sync.Mutex
 }
 
-func NewMemoryStore() (*MemoryStore, error) {
+func NewMemoryStore() *MemoryStore {
 	return &MemoryStore{
 		memory: map[string]model.Site{},
-		mu:     sync.RWMutex{},
-	}, nil
+		mu:     sync.Mutex{},
+	}
 }
 
-func (m *MemoryStore) Add(site model.Site) bool {
+func (m *MemoryStore) Add(site model.Site) {
 	m.mu.Lock()
 	m.memory[site.ID] = site
 	m.mu.Unlock()
-
-	return true
 }
 
-func (m *MemoryStore) Get(id string) (model.Site, bool) {
-	m.mu.RLock()
+func (m *MemoryStore) Get(id string) (model.Site, error) {
+	m.mu.Lock()
 	site, ok := m.memory[id]
-	m.mu.RUnlock()
-
-	return site, ok
-}
-
-func (m *MemoryStore) Update(id string, site model.Site) bool {
-	m.mu.RLock()
-	_, ok := m.memory[id]
-	m.mu.RUnlock()
-
-	if !ok {
-		return false
-	}
-
-	m.mu.Lock()
-	m.memory[site.ID] = site
 	m.mu.Unlock()
 
-	return true
-}
-
-func (m *MemoryStore) Delete(id string) bool {
-	m.mu.RLock()
-	_, ok := m.memory[id]
-	m.mu.RUnlock()
-
 	if !ok {
-		return false
+		return model.Site{}, ErrSiteNotFound
 	}
 
-	m.mu.Lock()
-	delete(m.memory, id)
-	m.mu.Unlock()
-
-	return true
+	return site, nil
 }

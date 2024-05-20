@@ -1,4 +1,4 @@
-package app_test
+package shortener_test
 
 import (
 	"io"
@@ -9,7 +9,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"shortener/internal/app"
+	"shortener/config"
+	"shortener/internal/service"
+	"shortener/internal/shortener"
+	"shortener/internal/store"
 )
 
 func TestMethods(t *testing.T) {
@@ -31,8 +34,8 @@ func TestMethods(t *testing.T) {
 			method:  http.MethodPost,
 			request: "/",
 			want: want{
-				code:        500,
-				response:    "Internal Server Error\n",
+				code:        201,
+				response:    "/aaaaaaaa",
 				contentType: "text/plain; charset=utf-8",
 			},
 		},
@@ -41,8 +44,8 @@ func TestMethods(t *testing.T) {
 			method:  http.MethodGet,
 			request: "/1",
 			want: want{
-				code:        500,
-				response:    "Internal Server Error\n",
+				code:        307,
+				response:    "",
 				contentType: "text/plain; charset=utf-8",
 			},
 		},
@@ -68,8 +71,13 @@ func TestMethods(t *testing.T) {
 		},
 	}
 
+	var cfg config.Config
+	db := store.NewDummyStore()
+	generator := service.NewFakeIDGenerator()
+	shortenerService := service.NewService(db, cfg, generator)
+	handler := shortener.NewHandler(shortenerService)
+
 	for _, tt := range testCases {
-		tt := tt //nolint:copyloopvar // it's for stupid Yandex Practicum static test
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -78,11 +86,11 @@ func TestMethods(t *testing.T) {
 
 			switch tt.method {
 			case http.MethodPost:
-				app.AddSite(responseRecorder, request)
+				handler.AddSite(responseRecorder, request)
 			case http.MethodGet:
-				app.GetSite(responseRecorder, request)
+				handler.GetSite(responseRecorder, request)
 			default:
-				app.AddSite(responseRecorder, request)
+				handler.AddSite(responseRecorder, request)
 			}
 
 			response := responseRecorder.Result()

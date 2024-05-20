@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	log "shortener/pkg/logger"
+	log "shortener/internal/logger"
 )
 
 func TestFloat32Attr(t *testing.T) {

@@ -8,19 +8,22 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
+const (
+	devMode  = "development"
+	testMode = "test"
+	prodMode = "production"
+)
+
 type (
+	Address string
+
 	App struct {
 		Mode string `env:"APP_MODE" validate:"required,oneof=development production test"`
 	}
 
-	Domain struct {
-		URL string `env:"BASE_URL" validate:"url"`
-	}
-
-	Server struct {
-		Address string `env:"SERVER_ADDRESS" validate:"url"`
-		// Host    string `env:"SRV_HOST"       validate:"required"`
-		// Port    int    `env:"SRV_PORT"       validate:"required,min=0,max=65535"`
+	Shortener struct {
+		Address Address `env:"SERVER_ADDRESS" validate:"url"`
+		Domain  string  `env:"BASE_URL"       validate:"url"`
 	}
 
 	Store struct {
@@ -29,30 +32,24 @@ type (
 	}
 
 	Config struct {
-		App
-		Server
-		Store
-		Domain
+		App       App
+		Shortener Shortener
+		Store     Store
 	}
 )
 
 func NewConfig() (Config, error) {
 	var config Config
 
-	var configServer Server
-	var domain Domain
-	err := configServer.Set("localhost:8080")
+	err := config.Shortener.Address.Set("localhost:8080")
 	if err != nil {
 		return Config{}, fmt.Errorf("failed to set default value: %w", err)
 	}
 
-	flag.Var(&configServer, "a", "Server address host:port")
-	flag.StringVar(&domain.URL, "b", "http://localhost:8080", "domain url")
+	flag.Var(&config.Shortener.Address, "a", "Server address host:port")
+	flag.StringVar(&config.Shortener.Domain, "b", "http://localhost:8080", "domain url")
 
 	flag.Parse()
-
-	config.Server = configServer
-	config.Domain = domain
 
 	if err = env.Parse(&config); err != nil {
 		return Config{}, fmt.Errorf("failed to parse config: %w", err)

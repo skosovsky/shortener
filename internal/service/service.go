@@ -6,9 +6,8 @@ import (
 	"net/url"
 
 	"shortener/config"
+	log "shortener/internal/logger"
 	"shortener/internal/model"
-	"shortener/internal/store"
-	log "shortener/pkg/logger"
 )
 
 var (
@@ -16,42 +15,53 @@ var (
 	ErrSiteNotFound = errors.New("site not found")
 )
 
-type Shortener struct {
-	store  store.Store
-	config config.Config
+type Store interface {
+	Add(model.Site)
+	Get(string) (model.Site, error)
 }
 
-func NewSiteService(store store.Store, config config.Config) Shortener {
+type Generator interface {
+	Generate(domain string, link string) model.Site
+}
+
+type Shortener struct {
+	store     Store
+	config    config.Config
+	generator Generator
+}
+
+func NewService(store Store, config config.Config, generator Generator) Shortener {
 	return Shortener{
-		store:  store,
-		config: config,
+		store:     store,
+		config:    config,
+		generator: generator,
 	}
 }
 
 func (s Shortener) Add(link string) (model.Site, error) {
 	_, err := url.Parse(link)
 	if err != nil {
-		return model.Site{}, fmt.Errorf("invalid link URL: %w", err)
+		return model.Site{}, fmt.Errorf("invalid link URL: %w, %w", err, ErrSiteNotAdded)
 	}
 
-	site := s.SiteGenerate(link)
+	site := s.generator.Generate(s.config.Shortener.Domain, link)
 
-	if ok := s.store.Add(site); !ok {
-		return model.Site{}, ErrSiteNotAdded
-	}
+	s.store.Add(site)
 
-	log.Info("site added", log.StringAttr("site", fmt.Sprint(site)))
+	log.Debug("site added",
+		log.StringAttr("site", fmt.Sprint(site)))
 
 	return site, nil
 }
 
 func (s Shortener) Get(id string) (model.Site, error) {
-	site, ok := s.store.Get(id)
-	if !ok {
+	site, err := s.store.Get(id)
+	if err != nil {
 		return model.Site{}, ErrSiteNotFound
 	}
 
-	log.Info("site returned", log.StringAttr("site", fmt.Sprint(site)))
+	log.Debug("site returned",
+		log.StringAttr("site", fmt.Sprint(site)))
 
 	return site, nil
 }

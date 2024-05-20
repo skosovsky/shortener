@@ -1,4 +1,4 @@
-package app
+package shortener
 
 import (
 	"io"
@@ -6,27 +6,39 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
+	log "shortener/internal/logger"
 	"shortener/internal/service"
 )
 
-type KeyServiceCtx struct{}
+type Handler struct {
+	service service.Shortener
+}
 
-func AddSite(w http.ResponseWriter, r *http.Request) {
+func NewHandler(service service.Shortener) Handler {
+	return Handler{service: service}
+}
+
+func (h Handler) InitRoutes() http.Handler {
+	router := chi.NewRouter()
+
+	router.Post("/", h.AddSite)
+	router.Get("/{id}", h.GetSite)
+
+	return router
+}
+
+func (h Handler) AddSite(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 
 		return
 	}
 
-	shortener, ok := r.Context().Value(KeyServiceCtx{}).(service.Shortener)
-	if !ok {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-
-		return
-	}
-
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
+		log.Error("Error writing response", //nolint:contextcheck // false positive
+			log.ErrAttr(err))
+
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 
 		return
@@ -34,7 +46,7 @@ func AddSite(w http.ResponseWriter, r *http.Request) {
 
 	defer r.Body.Close()
 
-	site, err := shortener.Add(string(body))
+	site, err := h.service.Add(string(body))
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 
@@ -44,30 +56,27 @@ func AddSite(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusCreated)
 
-	_, err = w.Write([]byte(site.ShortLink))
+	_, err = io.WriteString(w, site.ShortLink)
 	if err != nil {
+		log.Error("Error writing response", //nolint:contextcheck // false positive
+			log.ErrAttr(err))
+
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 
 		return
 	}
 }
 
-func GetSite(w http.ResponseWriter, r *http.Request) {
+func (h Handler) GetSite(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 
 		return
 	}
 
-	shortener, ok := r.Context().Value(KeyServiceCtx{}).(service.Shortener)
-	if !ok {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+	id := chi.URLParam(r, "id")
 
-		return
-	}
-
-	id := chi.URLParam(r, "id") // for mux: id := r.PathValue("id")
-	site, err := shortener.Get(id)
+	site, err := h.service.Get(id)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 

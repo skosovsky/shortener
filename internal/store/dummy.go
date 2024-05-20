@@ -6,22 +6,13 @@ import (
 
 type DummyStore struct{}
 
-func NewDummyStore() (*DummyStore, error) {
-	return &DummyStore{}, nil
+func NewDummyStore() *DummyStore {
+	return &DummyStore{}
 }
 
-func (m *DummyStore) Add(_ model.Site) bool {
-	return true
+func (m *DummyStore) Add(_ model.Site) {
 }
 
-func (m *DummyStore) Get(_ string) (model.Site, bool) {
-	return model.Site{}, true //nolint:exhaustruct // empty
-}
-
-func (m *DummyStore) Update(_ string, _ model.Site) bool {
-	return true
-}
-
-func (m *DummyStore) Delete(_ string) bool {
-	return true
+func (m *DummyStore) Get(_ string) (model.Site, error) {
+	return model.Site{}, nil //nolint:exhaustruct // empty
 }
