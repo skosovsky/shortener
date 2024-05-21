@@ -6,7 +6,7 @@ import (
 	"net/url"
 
 	"shortener/config"
-	log "shortener/internal/logger"
+	"shortener/internal/log"
 	"shortener/internal/model"
 )
 

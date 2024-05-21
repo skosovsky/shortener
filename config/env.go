@@ -5,7 +5,7 @@ import (
 
 	"github.com/joho/godotenv"
 
-	log "shortener/internal/logger"
+	"shortener/internal/log"
 )
 
 func LoadEnv() {

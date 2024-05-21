@@ -2,7 +2,7 @@ package main
 
 import (
 	"shortener/config"
-	log "shortener/internal/logger"
+	"shortener/internal/log"
 	"shortener/internal/shortener"
 )
 
@@ -25,5 +25,9 @@ func main() {
 	log.Info("config",
 		log.StringAttr("address", string(cfg.Shortener.Address)))
 
-	shortener.Run(cfg)
+	err = shortener.Run(cfg)
+	if err != nil {
+		log.Fatal("shortener run error",
+			log.ErrAttr(err))
+	}
 }

@@ -6,7 +6,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	log "shortener/internal/logger"
+	"shortener/internal/log"
 	"shortener/internal/service"
 )
 

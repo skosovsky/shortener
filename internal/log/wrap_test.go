@@ -1,11 +1,11 @@
-package logger_test
+package log_test
 
 import (
 	"errors"
 	"testing"
 	"time"
 
-	log "shortener/internal/logger"
+	"shortener/internal/log"
 )
 
 func TestFloat32Attr(t *testing.T) {

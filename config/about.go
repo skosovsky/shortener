@@ -7,7 +7,7 @@ import (
 	"runtime/debug"
 	"strings"
 
-	log "shortener/internal/logger"
+	"shortener/internal/log"
 )
 
 var ErrInfoUnknown = errors.New("app name or revision unknown")

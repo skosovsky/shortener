@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"shortener/config"
-	log "shortener/internal/logger"
+	"shortener/internal/log"
 )
 
 const (
@@ -39,7 +39,7 @@ func RunServer(_ context.Context, handler Handler, cfg config.Config) error {
 		log.StringAttr("host:port", string(cfg.Shortener.Address)))
 
 	if err := server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
-		return fmt.Errorf("could not start server: %w", err)
+		return fmt.Errorf("server error: %w", err)
 	}
 
 	err := server.Close()
