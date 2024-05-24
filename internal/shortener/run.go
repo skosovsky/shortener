@@ -1,0 +1,26 @@
+package shortener
+
+import (
+	"context"
+	"fmt"
+
+	"shortener/config"
+	"shortener/internal/service"
+	"shortener/internal/store"
+)
+
+func Run(cfg config.Config) error {
+	db := store.NewMemoryStore()
+
+	generator := service.NewIDGenerator()
+
+	shortener := service.NewService(db, cfg, generator)
+
+	handler := NewHandler(shortener)
+
+	if err := RunServer(context.Background(), handler, cfg); err != nil {
+		return fmt.Errorf("run server: %w", err)
+	}
+
+	return nil
+}
