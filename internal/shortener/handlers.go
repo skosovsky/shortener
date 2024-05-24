@@ -21,8 +21,8 @@ func NewHandler(service service.Shortener) Handler {
 func (h Handler) InitRoutes() http.Handler {
 	router := chi.NewRouter()
 
-	router.Post("/", h.AddSite)
-	router.Get("/{id}", h.GetSite)
+	router.Post("/", WithLogging(h.AddSite))
+	router.Get("/{id}", WithLogging(h.GetSite))
 
 	return router
 }
