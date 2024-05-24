@@ -7,8 +7,13 @@ import (
 
 	"shortener/config"
 	"shortener/internal/log"
-	"shortener/internal/model"
 )
+
+type Site struct {
+	ID        string
+	Link      string
+	ShortLink string
+}
 
 var (
 	ErrSiteNotAdded = errors.New("site not added")
@@ -16,12 +21,12 @@ var (
 )
 
 type Store interface {
-	Add(model.Site)
-	Get(string) (model.Site, error)
+	Add(Site)
+	Get(string) (Site, error)
 }
 
 type Generator interface {
-	Generate(domain string, link string) model.Site
+	Generate(domain string, link string) Site
 }
 
 type Shortener struct {
@@ -38,10 +43,10 @@ func NewService(store Store, config config.Config, generator Generator) Shortene
 	}
 }
 
-func (s Shortener) Add(link string) (model.Site, error) {
+func (s Shortener) Add(link string) (Site, error) {
 	_, err := url.Parse(link)
 	if err != nil {
-		return model.Site{}, fmt.Errorf("invalid link URL: %w, %w", err, ErrSiteNotAdded)
+		return Site{}, fmt.Errorf("invalid link URL: %w, %w", err, ErrSiteNotAdded)
 	}
 
 	site := s.generator.Generate(s.config.Shortener.Domain, link)
@@ -54,10 +59,10 @@ func (s Shortener) Add(link string) (model.Site, error) {
 	return site, nil
 }
 
-func (s Shortener) Get(id string) (model.Site, error) {
+func (s Shortener) Get(id string) (Site, error) {
 	site, err := s.store.Get(id)
 	if err != nil {
-		return model.Site{}, ErrSiteNotFound
+		return Site{}, ErrSiteNotFound
 	}
 
 	log.Debug("site returned",

@@ -4,36 +4,36 @@ import (
 	"errors"
 	"sync"
 
-	"shortener/internal/model"
+	"shortener/internal/service"
 )
 
 var ErrSiteNotFound = errors.New("site not found")
 
 type MemoryStore struct {
-	memory map[string]model.Site
+	memory map[string]service.Site
 	mu     sync.Mutex
 }
 
 func NewMemoryStore() *MemoryStore {
 	return &MemoryStore{
-		memory: map[string]model.Site{},
+		memory: map[string]service.Site{},
 		mu:     sync.Mutex{},
 	}
 }
 
-func (m *MemoryStore) Add(site model.Site) {
+func (m *MemoryStore) Add(site service.Site) {
 	m.mu.Lock()
 	m.memory[site.ID] = site
 	m.mu.Unlock()
 }
 
-func (m *MemoryStore) Get(id string) (model.Site, error) {
+func (m *MemoryStore) Get(id string) (service.Site, error) {
 	m.mu.Lock()
 	site, ok := m.memory[id]
 	m.mu.Unlock()
 
 	if !ok {
-		return model.Site{}, ErrSiteNotFound
+		return service.Site{}, ErrSiteNotFound
 	}
 
 	return site, nil

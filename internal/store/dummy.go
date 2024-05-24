@@ -1,8 +1,6 @@
 package store
 
-import (
-	"shortener/internal/model"
-)
+import "shortener/internal/service"
 
 type DummyStore struct{}
 
@@ -10,9 +8,9 @@ func NewDummyStore() *DummyStore {
 	return &DummyStore{}
 }
 
-func (m *DummyStore) Add(_ model.Site) {
+func (m *DummyStore) Add(_ service.Site) {
 }
 
-func (m *DummyStore) Get(_ string) (model.Site, error) {
-	return model.Site{}, nil //nolint:exhaustruct // empty
+func (m *DummyStore) Get(_ string) (service.Site, error) {
+	return service.Site{}, nil //nolint:exhaustruct // empty
 }

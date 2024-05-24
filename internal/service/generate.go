@@ -2,8 +2,6 @@ package service
 
 import (
 	"crypto/rand"
-
-	"shortener/internal/model"
 )
 
 type (
@@ -27,9 +25,9 @@ func NewIDGenerator() IDGenerator {
 	}
 }
 
-func (i IDGenerator) Generate(domain string, link string) model.Site {
+func (i IDGenerator) Generate(domain string, link string) Site {
 	var id = make([]byte, i.length)
-	var site model.Site
+	var site Site
 
 	_, _ = rand.Read(id)
 
@@ -53,9 +51,9 @@ func NewFakeIDGenerator() FakeIDGenerator {
 	}
 }
 
-func (i FakeIDGenerator) Generate(domain string, link string) model.Site {
+func (i FakeIDGenerator) Generate(domain string, link string) Site {
 	var id = make([]byte, i.length)
-	var site model.Site
+	var site Site
 
 	_, _ = rand.Read(id)
 
