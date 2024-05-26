@@ -1,12 +1,14 @@
 package shortener
 
 import (
+	"encoding/json"
 	"io"
 	"net/http"
 
-	"github.com/go-chi/chi/v5"
+	"github.com/go-playground/validator/v10"
 
 	"shortener/internal/log"
+	"shortener/internal/mux"
 	"shortener/internal/service"
 )
 
@@ -19,24 +21,27 @@ func NewHandler(service service.Shortener) Handler {
 }
 
 func (h Handler) InitRoutes() http.Handler {
-	router := chi.NewRouter()
+	router := mux.NewRouter()
 
-	router.Post("/", WithLogging(h.AddSite))
-	router.Get("/{id}", WithLogging(h.GetSite))
+	router.Use(WithLogging)
+
+	router.Post("/", h.AddSite)
+	router.Post("/api/shorten", h.AddSiteJSON)
+	router.Get("/{id}", h.GetSite)
 
 	return router
 }
 
-func (h Handler) AddSite(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-
-		return
+func (h Handler) AddSiteJSON(w http.ResponseWriter, r *http.Request) { //TODO: Update swagger api docs
+	url := struct {
+		URL string `json:"url"`
+	}{
+		URL: "",
 	}
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		log.Error("Error writing response", //nolint:contextcheck // false positive
+		log.Error("error writing response", //nolint:contextcheck // false positive
 			log.ErrAttr(err))
 
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -44,7 +49,94 @@ func (h Handler) AddSite(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	defer r.Body.Close()
+	if len(body) == 0 {
+		log.Debug("empty body") //nolint:contextcheck // false positive
+
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+
+		return
+	}
+
+	err = json.Unmarshal(body, &url)
+	if err != nil {
+		log.Debug("error decode to json", //nolint:contextcheck // false positive
+			log.ErrAttr(err))
+
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+
+		return
+	}
+
+	defer func(Body io.ReadCloser) { //nolint:contextcheck // false positive
+		err = Body.Close()
+		if err != nil {
+			log.Error("error close body",
+				log.ErrAttr(err))
+		}
+	}(r.Body)
+
+	if !h.IsValidURL(url.URL) {
+		log.Debug("url validate failed") //nolint:contextcheck // false positive
+
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+
+		return
+	}
+
+	site, err := h.service.Add(url.URL)
+	if err != nil {
+		log.Error("error site add", //nolint:contextcheck // false positive
+			log.ErrAttr(err))
+
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(http.StatusCreated)
+
+	result := struct {
+		URL string `json:"result"`
+	}{
+		URL: site.ShortLink,
+	}
+
+	err = json.NewEncoder(w).Encode(result)
+	if err != nil {
+		log.Error("error encode to json", //nolint:contextcheck // false positive
+			log.ErrAttr(err))
+
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+
+		return
+	}
+}
+
+func (h Handler) AddSite(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		log.Error("error reading response", //nolint:contextcheck // false positive
+			log.ErrAttr(err))
+
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+
+		return
+	}
+
+	defer func(Body io.ReadCloser) { //nolint:contextcheck // false positive
+		err = Body.Close()
+		if err != nil {
+			log.Error("error close body",
+				log.ErrAttr(err))
+		}
+	}(r.Body)
+
+	if !h.IsValidURL(string(body)) {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+
+		return
+	}
 
 	site, err := h.service.Add(string(body))
 	if err != nil {
@@ -58,7 +150,7 @@ func (h Handler) AddSite(w http.ResponseWriter, r *http.Request) {
 
 	_, err = io.WriteString(w, site.ShortLink)
 	if err != nil {
-		log.Error("Error writing response", //nolint:contextcheck // false positive
+		log.Error("error writing response", //nolint:contextcheck // false positive
 			log.ErrAttr(err))
 
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -68,13 +160,7 @@ func (h Handler) AddSite(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h Handler) GetSite(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-
-		return
-	}
-
-	id := chi.URLParam(r, "id")
+	id := r.PathValue("id")
 
 	site, err := h.service.Get(id)
 	if err != nil {
@@ -86,4 +172,22 @@ func (h Handler) GetSite(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.Header().Add("Location", site.Link)
 	w.WriteHeader(http.StatusTemporaryRedirect)
+}
+
+func (Handler) IsValidURL(url string) bool {
+	if len(url) == 0 {
+		return false
+	}
+
+	validate := validator.New(validator.WithRequiredStructEnabled())
+
+	checkable := struct {
+		URL string `validate:"url"`
+	}{
+		URL: url,
+	}
+
+	err := validate.Struct(checkable)
+
+	return err == nil
 }

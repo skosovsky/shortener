@@ -1,7 +1,5 @@
 POST http://localhost:8080/
-Content-Type: text/plain
-
-https://practicum.yandex.ru/
+Content-Type: application/json
 
 > {%
     client.global.set("link", response.body);
@@ -10,3 +8,16 @@ https://practicum.yandex.ru/
 ###
 
 GET {{link}}
+
+###
+
+POST http://localhost:8080/api/shorten
+Content-Type: application/json
+
+{
+  "url": "https://practicum.yandex.ru"
+}
+
+> {%
+    client.global.set("link", response.body);
+%}

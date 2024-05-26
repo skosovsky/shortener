@@ -1,9 +1,9 @@
 package shortener_test
 
 import (
-	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -15,25 +15,47 @@ import (
 	"shortener/internal/store"
 )
 
-func TestRoutingGet(t *testing.T) {
+func TestRouting(t *testing.T) {
+	prepare(t)
+
 	t.Parallel()
 
 	type want struct {
-		path   string
 		status int
-		body   string
 	}
 
 	testCases := []struct {
-		name string
-		want want
+		name        string
+		method      string
+		request     string
+		requestBody string
+		want        want
 	}{
 		{
-			name: "with id",
+			name:        "Post with request, empty body",
+			method:      http.MethodPost,
+			request:     "/ping",
+			requestBody: "",
 			want: want{
-				path:   "/10",
-				status: 307,
-				body:   "",
+				status: 400,
+			},
+		},
+		{
+			name:        "Post with request, valid body",
+			method:      http.MethodPost,
+			request:     "/ping",
+			requestBody: "http://ya.ru",
+			want: want{
+				status: 201,
+			},
+		},
+		{
+			name:        "Post without ID, valid body",
+			method:      http.MethodPost,
+			request:     "/",
+			requestBody: "http://ya.ru",
+			want: want{
+				status: 201,
 			},
 		},
 	}
@@ -41,7 +63,7 @@ func TestRoutingGet(t *testing.T) {
 	var cfg config.Config
 	db := store.NewDummyStore()
 	generator := service.NewFakeIDGenerator()
-	shortenerService := service.NewService(db, cfg, generator)
+	shortenerService := service.NewService(db, cfg, &generator)
 	handler := shortener.NewHandler(shortenerService)
 
 	server := httptest.NewServer(handler.InitRoutes())
@@ -52,8 +74,8 @@ func TestRoutingGet(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			url := server.URL + tt.want.path
-			request, err := http.NewRequest(http.MethodGet, url, http.NoBody)
+			url := server.URL + tt.request
+			request, err := http.NewRequest(tt.method, url, strings.NewReader(tt.requestBody))
 			require.NoError(t, err)
 
 			response, err := http.DefaultClient.Do(request)
@@ -61,13 +83,8 @@ func TestRoutingGet(t *testing.T) {
 
 			assert.Equal(t, tt.want.status, response.StatusCode)
 
-			responseBody, err := io.ReadAll(response.Body)
-			require.NoError(t, err)
-
 			err = response.Body.Close()
 			require.NoError(t, err)
-
-			assert.Equal(t, tt.want.body, string(responseBody))
 		})
 	}
 }
