@@ -23,7 +23,7 @@ func prepare(t *testing.T) {
 	log.Prepare()
 }
 
-func TestPostAddSite(t *testing.T) {
+func TestPostAddSite(t *testing.T) { //TODO: Add new tests with compress
 	prepare(t)
 
 	t.Parallel()

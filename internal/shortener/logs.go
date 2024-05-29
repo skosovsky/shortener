@@ -8,15 +8,44 @@ import (
 	"shortener/internal/log"
 )
 
+type (
+	logResponseWriter struct {
+		http.ResponseWriter
+		responseData *responseData
+	}
+
+	responseData struct {
+		statusCode int
+		body       []byte
+		bodySize   int
+	}
+)
+
+func (l *logResponseWriter) Write(data []byte) (int, error) {
+	size, err := l.ResponseWriter.Write(data)
+	if err != nil {
+		return 0, fmt.Errorf("error writing response: %w", err)
+	}
+
+	l.responseData.bodySize += size
+
+	return size, nil
+}
+
+func (l *logResponseWriter) WriteHeader(statusCode int) {
+	l.ResponseWriter.WriteHeader(statusCode)
+	l.responseData.statusCode = statusCode
+}
+
 func WithLogging(next http.Handler) http.Handler {
-	logFn := func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 
 		var respData = new(responseData)
 
 		logWriter := logResponseWriter{
 			ResponseWriter: w,
-			responseData:   respData,
+			responseData:   new(responseData),
 		}
 
 		next.ServeHTTP(&logWriter, r)
@@ -30,36 +59,6 @@ func WithLogging(next http.Handler) http.Handler {
 
 		log.Info("answer", //nolint:contextcheck // no ctx
 			log.IntAttr("status", respData.statusCode),
-			log.IntAttr("size", respData.size))
-	}
-
-	return http.HandlerFunc(logFn)
-}
-
-type (
-	responseData struct {
-		statusCode int
-		size       int
-	}
-
-	logResponseWriter struct {
-		http.ResponseWriter
-		responseData *responseData
-	}
-)
-
-func (l *logResponseWriter) Write(data []byte) (int, error) {
-	size, err := l.ResponseWriter.Write(data)
-	if err != nil {
-		return 0, fmt.Errorf("error writing response: %w", err)
-	}
-
-	l.responseData.size += size
-
-	return size, nil
-}
-
-func (l *logResponseWriter) WriteHeader(statusCode int) {
-	l.ResponseWriter.WriteHeader(statusCode)
-	l.responseData.statusCode = statusCode
+			log.IntAttr("size", respData.bodySize))
+	})
 }

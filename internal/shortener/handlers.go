@@ -24,6 +24,7 @@ func (h Handler) InitRoutes() http.Handler {
 	router := mux.NewRouter()
 
 	router.Use(WithLogging)
+	router.Use(WithGzipCompress)
 
 	router.Post("/", h.AddSite)
 	router.Post("/api/shorten", h.AddSiteJSON)
