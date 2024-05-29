@@ -37,10 +37,10 @@ func (g *gzipResponseWriter) Header() http.Header {
 
 func WithGzipCompress(next http.Handler) http.Handler { //nolint:gocognit // it's true
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if shouldDecompress(r, methodCompressGzip) {
+		if shouldDecompress(r, methodCompressGzip) { //nolint:contextcheck // no ctx
 			gzipReader, err := gzip.NewReader(r.Body)
 			if err != nil {
-				log.Error("Failed to create gzip reader", //nolint:contextcheck // noctx
+				log.Error("Failed to create gzip reader", //nolint:contextcheck // no ctx
 					log.ErrAttr(err))
 
 				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -70,7 +70,7 @@ func WithGzipCompress(next http.Handler) http.Handler { //nolint:gocognit // it'
 
 		contentTypes := interceptor.Header().Values("Content-Type")
 
-		if !shouldCompress(r, methodCompressGzip, interceptor.statusCode, interceptor.bodySize, contentTypes) {
+		if !shouldCompress(r, methodCompressGzip, interceptor.statusCode, interceptor.bodySize, contentTypes) { //nolint:contextcheck // no ctx
 			if interceptor.statusCode != 0 {
 				interceptor.ResponseWriter.WriteHeader(interceptor.statusCode)
 			}
@@ -119,9 +119,11 @@ func WithGzipCompress(next http.Handler) http.Handler { //nolint:gocognit // it'
 
 func shouldDecompress(r *http.Request, methodCompress string) bool {
 	acceptEncodingsJoint := strings.Join(r.Header.Values("Content-Encoding"), ", ")
-	if !strings.Contains(acceptEncodingsJoint, methodCompress) { //nolint:gosimple // not clear
+	if !strings.Contains(acceptEncodingsJoint, methodCompress) {
 		return false
 	}
+
+	log.Debug("should to decompress")
 
 	return true
 }
@@ -154,9 +156,11 @@ func shouldCompress(r *http.Request, methodCompress string, statusCode int, body
 	}
 
 	cacheControlsJoint := strings.Join(r.Header.Values("Cache-Control"), ", ")
-	if !strings.Contains(cacheControlsJoint, "no-transform") { //nolint:gosimple // not clear
+	if !strings.Contains(cacheControlsJoint, "no-transform") {
 		return false
 	}
+
+	log.Debug("should to compress")
 
 	return true
 }
