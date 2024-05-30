@@ -28,14 +28,17 @@ func (g *gzipResponseWriter) Write(data []byte) (int, error) {
 }
 
 func (g *gzipResponseWriter) WriteHeader(statusCode int) {
-	g.statusCode = statusCode
+	if g.statusCode == 0 {
+		g.statusCode = statusCode
+		g.ResponseWriter.WriteHeader(statusCode)
+	}
 }
 
 func (g *gzipResponseWriter) Header() http.Header {
 	return g.ResponseWriter.Header()
 }
 
-func WithGzipCompress(next http.Handler) http.Handler { //nolint:gocognit // it's true
+func WithGzipCompress(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if shouldDecompress(r, methodCompressGzip) { //nolint:contextcheck // no ctx
 			gzipReader, err := gzip.NewReader(r.Body)
@@ -71,10 +74,6 @@ func WithGzipCompress(next http.Handler) http.Handler { //nolint:gocognit // it'
 		contentTypes := interceptor.Header().Values("Content-Type")
 
 		if !shouldCompress(r, methodCompressGzip, interceptor.statusCode, interceptor.bodySize, contentTypes) { //nolint:contextcheck // no ctx
-			if interceptor.statusCode != 0 {
-				interceptor.ResponseWriter.WriteHeader(interceptor.statusCode)
-			}
-
 			_, err := interceptor.ResponseWriter.Write(interceptor.body)
 			if err != nil {
 				log.Error("Error writing response", //nolint:contextcheck // noctx
@@ -90,10 +89,6 @@ func WithGzipCompress(next http.Handler) http.Handler { //nolint:gocognit // it'
 
 		w.Header().Set("Content-Encoding", "gzip")
 		w.Header().Set("Cache-Control", "no-transform")
-
-		if interceptor.statusCode != 0 {
-			interceptor.ResponseWriter.WriteHeader(interceptor.statusCode)
-		}
 
 		gzipWriter := gzip.NewWriter(w)
 
@@ -118,6 +113,10 @@ func WithGzipCompress(next http.Handler) http.Handler { //nolint:gocognit // it'
 }
 
 func shouldDecompress(r *http.Request, methodCompress string) bool {
+	if r.Body == http.NoBody {
+		return false
+	}
+
 	acceptEncodingsJoint := strings.Join(r.Header.Values("Content-Encoding"), ", ")
 	if !strings.Contains(acceptEncodingsJoint, methodCompress) {
 		return false
@@ -156,7 +155,7 @@ func shouldCompress(r *http.Request, methodCompress string, statusCode int, body
 	}
 
 	cacheControlsJoint := strings.Join(r.Header.Values("Cache-Control"), ", ")
-	if !strings.Contains(cacheControlsJoint, "no-transform") {
+	if strings.Contains(cacheControlsJoint, "no-transform") {
 		return false
 	}
 

@@ -45,7 +45,7 @@ func WithLogging(next http.Handler) http.Handler {
 
 		logWriter := logResponseWriter{
 			ResponseWriter: w,
-			responseData:   new(responseData),
+			responseData:   respData,
 		}
 
 		next.ServeHTTP(&logWriter, r)
@@ -60,5 +60,9 @@ func WithLogging(next http.Handler) http.Handler {
 		log.Info("answer", //nolint:contextcheck // no ctx
 			log.IntAttr("status", respData.statusCode),
 			log.IntAttr("size", respData.bodySize))
+
+		log.Debug("additional", //nolint:contextcheck // no ctx
+			log.StringAttr("Content-Type", r.Header.Get("Content-Type")),
+			log.StringAttr("Content-Encoding", r.Header.Get("Content-Encoding")))
 	})
 }
