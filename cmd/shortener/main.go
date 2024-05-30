@@ -23,7 +23,8 @@ func main() {
 	}
 
 	log.Info("config",
-		log.StringAttr("address", string(cfg.Shortener.Address)))
+		log.StringAttr("address", string(cfg.Shortener.Address)),
+		log.StringAttr("filepath", cfg.Store.FileStoragePath))
 
 	err = shortener.Run(cfg)
 	if err != nil {

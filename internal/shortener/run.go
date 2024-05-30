@@ -10,7 +10,12 @@ import (
 )
 
 func Run(cfg config.Config) error {
-	db := store.NewMemoryStore()
+	db, err := store.NewFileStore(cfg.Store.FileStoragePath)
+	if err != nil {
+		return fmt.Errorf("create file store: %w", err)
+	}
+
+	defer db.Close()
 
 	generator := service.NewIDGenerator()
 
@@ -18,7 +23,7 @@ func Run(cfg config.Config) error {
 
 	handler := NewHandler(shortener)
 
-	if err := RunServer(context.Background(), handler, cfg); err != nil {
+	if err = RunServer(context.Background(), handler, cfg); err != nil {
 		return fmt.Errorf("run server: %w", err)
 	}
 

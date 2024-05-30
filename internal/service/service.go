@@ -10,9 +10,9 @@ import (
 )
 
 type Site struct {
-	ID        string
-	Link      string
-	ShortLink string
+	ID        string `json:"id"`
+	Link      string `json:"link"`
+	ShortLink string `json:"shortLink"`
 }
 
 var (
@@ -21,7 +21,7 @@ var (
 )
 
 type Store interface {
-	Add(Site)
+	Add(Site) error
 	Get(string) (Site, error)
 }
 
@@ -51,7 +51,10 @@ func (s Shortener) Add(link string) (Site, error) {
 
 	site := s.generator.Generate(s.config.Shortener.Domain, link)
 
-	s.store.Add(site)
+	err = s.store.Add(site)
+	if err != nil {
+		return Site{}, fmt.Errorf("site not add, %w - %w", err, ErrSiteNotAdded)
+	}
 
 	log.Debug("site added",
 		log.StringAttr("site", fmt.Sprint(site)))

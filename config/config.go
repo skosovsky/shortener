@@ -27,8 +27,9 @@ type (
 	}
 
 	Store struct {
-		DBDriver  string `env:"DB_DRIVER"  validate:"required,oneof=sqlite3 memory"`
-		DBAddress string `env:"DB_ADDRESS"`
+		DBDriver        string `env:"DB_DRIVER"         validate:"required,oneof=sqlite3 memory"`
+		DBAddress       string `env:"DB_ADDRESS"`
+		FileStoragePath string `env:"FILE_STORAGE_PATH" validate:"filepath"`
 	}
 
 	Config struct {
@@ -48,6 +49,7 @@ func NewConfig() (Config, error) {
 
 	flag.Var(&config.Shortener.Address, "a", "Server address host:port")
 	flag.StringVar(&config.Shortener.Domain, "b", "http://localhost:8080", "domain url")
+	flag.StringVar(&config.Store.FileStoragePath, "f", "file_store.json", "file storage path")
 
 	flag.Parse()
 

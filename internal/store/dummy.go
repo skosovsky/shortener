@@ -8,7 +8,8 @@ func NewDummyStore() *DummyStore {
 	return &DummyStore{}
 }
 
-func (m *DummyStore) Add(_ service.Site) {
+func (m *DummyStore) Add(_ service.Site) error {
+	return nil
 }
 
 func (m *DummyStore) Get(_ string) (service.Site, error) {

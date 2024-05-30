@@ -21,10 +21,12 @@ func NewMemoryStore() *MemoryStore {
 	}
 }
 
-func (m *MemoryStore) Add(site service.Site) {
+func (m *MemoryStore) Add(site service.Site) error {
 	m.mu.Lock()
 	m.memory[site.ID] = site
 	m.mu.Unlock()
+
+	return nil
 }
 
 func (m *MemoryStore) Get(id string) (service.Site, error) {
