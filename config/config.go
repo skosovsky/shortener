@@ -47,7 +47,7 @@ func NewConfig() (Config, error) {
 		return Config{}, fmt.Errorf("failed to set default value: %w", err)
 	}
 
-	flag.Var(&config.Shortener.Address, "a", "Server address host:port")
+	flag.Var(&config.Shortener.Address, "a", "server address host:port")
 	flag.StringVar(&config.Shortener.Domain, "b", "http://localhost:8080", "domain url")
 	flag.StringVar(&config.Store.FileStoragePath, "f", "file_store.json", "file storage path")
 

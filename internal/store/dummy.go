@@ -8,11 +8,11 @@ func NewDummyStore() *DummyStore {
 	return &DummyStore{}
 }
 
-func (m *DummyStore) Add(_ service.Site) error {
+func (*DummyStore) Add(_ service.Site) error {
 	return nil
 }
 
-func (m *DummyStore) Get(_ string) (service.Site, error) {
+func (*DummyStore) Get(_ string) (service.Site, error) {
 	return service.Site{}, nil //nolint:exhaustruct // empty
 }
 

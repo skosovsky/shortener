@@ -58,7 +58,7 @@ func NewFileStore(fileName string) (*FileStore, error) {
 func (f *FileStore) Add(site service.Site) error {
 	_ = f.MemoryStore.Add(site) // err nil
 
-	err := f.encoder.Encode(&site)
+	err := f.encoder.Encode(site)
 	if err != nil {
 		return fmt.Errorf("encode file %s error: %w", f.file.Name(), err)
 	}
