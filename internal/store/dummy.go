@@ -15,3 +15,5 @@ func (m *DummyStore) Add(_ service.Site) error {
 func (m *DummyStore) Get(_ string) (service.Site, error) {
 	return service.Site{}, nil //nolint:exhaustruct // empty
 }
+
+func (*DummyStore) Close() {}

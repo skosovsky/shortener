@@ -40,3 +40,5 @@ func (m *MemoryStore) Get(id string) (service.Site, error) {
 
 	return site, nil
 }
+
+func (*MemoryStore) Close() {}

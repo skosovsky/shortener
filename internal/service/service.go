@@ -23,6 +23,7 @@ var (
 type Store interface {
 	Add(Site) error
 	Get(string) (Site, error)
+	Close()
 }
 
 type Generator interface {

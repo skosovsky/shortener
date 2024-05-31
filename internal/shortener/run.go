@@ -10,12 +10,19 @@ import (
 )
 
 func Run(cfg config.Config) error {
-	db, err := store.NewFileStore(cfg.Store.FileStoragePath)
-	if err != nil {
-		return fmt.Errorf("create file store: %w", err)
-	}
+	var db service.Store
+	var err error
 
-	defer db.Close()
+	if cfg.Store.FileStoragePath == "" {
+		db = store.NewMemoryStore()
+	} else {
+		db, err = store.NewFileStore(cfg.Store.FileStoragePath)
+		if err != nil {
+			return fmt.Errorf("create file store: %w", err)
+		}
+
+		defer db.Close()
+	}
 
 	generator := service.NewIDGenerator()
 
