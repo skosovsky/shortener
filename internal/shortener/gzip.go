@@ -17,10 +17,6 @@ type gzipResponseWriter struct {
 }
 
 func (g *gzipResponseWriter) Write(data []byte) (int, error) {
-	if g.statusCode == 0 {
-		g.WriteHeader(http.StatusOK)
-	}
-
 	g.body = append(g.body, data...)
 	g.bodySize += len(data)
 
@@ -28,10 +24,8 @@ func (g *gzipResponseWriter) Write(data []byte) (int, error) {
 }
 
 func (g *gzipResponseWriter) WriteHeader(statusCode int) {
-	if g.statusCode == 0 {
-		g.statusCode = statusCode
-		g.ResponseWriter.WriteHeader(statusCode)
-	}
+	g.statusCode = statusCode
+	g.ResponseWriter.WriteHeader(statusCode)
 }
 
 func (g *gzipResponseWriter) Header() http.Header {
@@ -76,7 +70,7 @@ func WithGzipCompress(next http.Handler) http.Handler {
 		if !shouldCompress(r, methodCompressGzip, interceptor.statusCode, interceptor.bodySize, contentTypes) { //nolint:contextcheck // no ctx
 			_, err := interceptor.ResponseWriter.Write(interceptor.body)
 			if err != nil {
-				log.Error("Error writing response", //nolint:contextcheck // noctx
+				log.Error("Error writing response", //nolint:contextcheck // no ctx
 					log.ErrAttr(err))
 
 				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -102,7 +96,7 @@ func WithGzipCompress(next http.Handler) http.Handler {
 
 		_, err := gzipWriter.Write(interceptor.body)
 		if err != nil {
-			log.Error("Error writing response", //nolint:contextcheck // noctx
+			log.Error("Error writing response", //nolint:contextcheck // no ctx
 				log.ErrAttr(err))
 
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

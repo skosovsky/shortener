@@ -42,7 +42,7 @@ func (h Handler) AddSiteJSON(w http.ResponseWriter, r *http.Request) { //TODO: U
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		log.Error("error writing response", //nolint:contextcheck // false positive
+		log.Error("error writing response", //nolint:contextcheck // no ctx
 			log.ErrAttr(err))
 
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -51,7 +51,7 @@ func (h Handler) AddSiteJSON(w http.ResponseWriter, r *http.Request) { //TODO: U
 	}
 
 	if len(body) == 0 {
-		log.Debug("empty body") //nolint:contextcheck // false positive
+		log.Debug("empty body") //nolint:contextcheck // no ctx
 
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 
@@ -60,7 +60,7 @@ func (h Handler) AddSiteJSON(w http.ResponseWriter, r *http.Request) { //TODO: U
 
 	err = json.Unmarshal(body, &url)
 	if err != nil {
-		log.Debug("error decode to json", //nolint:contextcheck // false positive
+		log.Debug("error decode to json", //nolint:contextcheck // no ctx
 			log.ErrAttr(err))
 
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -68,7 +68,7 @@ func (h Handler) AddSiteJSON(w http.ResponseWriter, r *http.Request) { //TODO: U
 		return
 	}
 
-	defer func(Body io.ReadCloser) { //nolint:contextcheck // false positive
+	defer func(Body io.ReadCloser) { //nolint:contextcheck // no ctx
 		err = Body.Close()
 		if err != nil {
 			log.Error("error close body",
@@ -77,7 +77,7 @@ func (h Handler) AddSiteJSON(w http.ResponseWriter, r *http.Request) { //TODO: U
 	}(r.Body)
 
 	if !h.IsValidURL(url.URL) {
-		log.Debug("url validate failed") //nolint:contextcheck // false positive
+		log.Debug("url validate failed") //nolint:contextcheck // no ctx
 
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 
@@ -86,7 +86,7 @@ func (h Handler) AddSiteJSON(w http.ResponseWriter, r *http.Request) { //TODO: U
 
 	site, err := h.service.Add(url.URL)
 	if err != nil {
-		log.Error("error site add", //nolint:contextcheck // false positive
+		log.Error("error site add", //nolint:contextcheck // no ctx
 			log.ErrAttr(err))
 
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -105,7 +105,7 @@ func (h Handler) AddSiteJSON(w http.ResponseWriter, r *http.Request) { //TODO: U
 
 	err = json.NewEncoder(w).Encode(result)
 	if err != nil {
-		log.Error("error encode to json", //nolint:contextcheck // false positive
+		log.Error("error encode to json", //nolint:contextcheck // no ctx
 			log.ErrAttr(err))
 
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -117,7 +117,7 @@ func (h Handler) AddSiteJSON(w http.ResponseWriter, r *http.Request) { //TODO: U
 func (h Handler) AddSite(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		log.Error("error reading response", //nolint:contextcheck // false positive
+		log.Error("error reading response", //nolint:contextcheck // no ctx
 			log.ErrAttr(err))
 
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -125,7 +125,7 @@ func (h Handler) AddSite(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	defer func(Body io.ReadCloser) { //nolint:contextcheck // false positive
+	defer func(Body io.ReadCloser) { //nolint:contextcheck // no ctx
 		err = Body.Close()
 		if err != nil {
 			log.Error("error close body",
@@ -151,7 +151,7 @@ func (h Handler) AddSite(w http.ResponseWriter, r *http.Request) {
 
 	_, err = io.WriteString(w, site.ShortLink)
 	if err != nil {
-		log.Error("error writing response", //nolint:contextcheck // false positive
+		log.Error("error writing response", //nolint:contextcheck // no ctx
 			log.ErrAttr(err))
 
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
