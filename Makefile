@@ -20,7 +20,7 @@ test-static: ## Test static
 	@echo "Testing ${APP} - static..."
 	go vet -vettool="$(shell which ./tests/statictest-darwin-arm64)" ./...
 
-.PHONY: test_all lint tests build-test test1 test2 test3 test4 test5 test6 test7 test8 test9
+.PHONY: test_all lint tests build-test test1 test2 test3 test4 test5 test6 test7 test8 test9 test10
 build-test: ## Build an application
 	@echo "Building ${APP} ..."
 	go mod tidy
@@ -71,7 +71,11 @@ test9: ## Test increment #9
 	@echo "Testing ${APP} - increment 9..."
 	tests/shortenertestbeta-darwin-arm64 -test.v -test.run="^TestIteration9$$" -binary-path=cmd/shortener/shortener -source-path=. -file-storage-path=temp.json
 
-test_all: lint tests build-test test1 test2 test3 test4 test5 test6 test7 test8 test9
+test10: ## Test increment #10
+	@echo "Testing ${APP} - increment 10..."
+	tests/shortenertestbeta-darwin-arm64 -test.v -test.run="^TestIteration10$$" -binary-path=cmd/shortener/shortener -source-path=. -database-dsn="postgres://postgres:postgres@localhost:5432/praktikum?sslmode=disable"
+
+test_all: lint tests build-test test1 test2 test3 test4 test5 test6 test7 test8 test9 test10
 	@echo "All tests completed."
 
 run: ## Run an application

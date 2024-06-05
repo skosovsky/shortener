@@ -28,6 +28,7 @@ type (
 
 	Store struct {
 		FileStoragePath string `env:"FILE_STORAGE_PATH"`
+		DatabaseDSN     string `env:"DATABASE_DSN"`
 	}
 
 	Config struct {
@@ -48,6 +49,7 @@ func NewConfig() (Config, error) {
 	flag.Var(&config.Shortener.Address, "a", "server address host:port")
 	flag.StringVar(&config.Shortener.Domain, "b", "http://localhost:8080", "domain url")
 	flag.StringVar(&config.Store.FileStoragePath, "f", "file_store.json", "file storage path")
+	flag.StringVar(&config.Store.DatabaseDSN, "d", "", "database connection string")
 
 	flag.Parse()
 

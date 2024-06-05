@@ -29,6 +29,7 @@ func (h Handler) InitRoutes() http.Handler {
 	router.Post("/", h.AddSite)
 	router.Post("/api/shorten", h.AddSiteJSON)
 	router.Get("/{id}", h.GetSite)
+	router.Get("/ping", h.Ping)
 
 	return router
 }
@@ -173,6 +174,21 @@ func (h Handler) GetSite(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.Header().Add("Location", site.Link)
 	w.WriteHeader(http.StatusTemporaryRedirect)
+}
+
+func (h Handler) Ping(w http.ResponseWriter, _ *http.Request) {
+	err := h.service.Ping()
+	if err != nil {
+		log.Error("error pinging database", //nolint:contextcheck // no ctx
+			log.ErrAttr(err))
+
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
 }
 
 func (Handler) IsValidURL(url string) bool {

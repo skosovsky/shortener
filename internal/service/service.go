@@ -1,6 +1,7 @@
 package service
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"net/url"
@@ -73,4 +74,26 @@ func (s Shortener) Get(id string) (Site, error) {
 		log.StringAttr("site", fmt.Sprint(site)))
 
 	return site, nil
+}
+
+func (s Shortener) Ping() error {
+	db, err := sql.Open("pgx", s.config.Store.DatabaseDSN)
+	if err != nil {
+		return fmt.Errorf("could not connect to database: %w", err)
+	}
+
+	defer func(db *sql.DB) {
+		err = db.Close()
+		if err != nil {
+			log.Error("could not close database connection",
+				log.ErrAttr(err))
+		}
+	}(db)
+
+	err = db.Ping()
+	if err != nil {
+		return fmt.Errorf("could not ping database: %w", err)
+	}
+
+	return nil
 }
